@@ -1,8 +1,8 @@
 'use client'
 
-import { api } from "@/lib/api";
 import { LoginInput, loginSchema } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react"
@@ -20,7 +20,7 @@ export default function Login() {
     async function onSubmit(data: LoginInput) {
         try {
             setIsLoading(true);
-            const response = await api.post("/login", data)
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_AUTH_URL}/login`, data)
             localStorage.setItem("token", response.data.token);
             router.push("/dashboard");
         } catch (error) {

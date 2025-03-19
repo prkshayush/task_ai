@@ -1,8 +1,8 @@
 'use client'
 
-import { api } from "@/lib/api";
 import { RegisterInput, registerSchema } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -19,7 +19,7 @@ export default function RegisterPage() {
     async function onSubmit(data: RegisterInput) {
         try {
             setIsLoading(true)
-            await api.post("/register", {
+            await axios.post(`${process.env.NEXT_PUBLIC_AUTH_URL}/register`, {
                 username: data.username,
                 password: data.password,
             });

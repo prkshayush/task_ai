@@ -5,10 +5,22 @@ import (
     "strings"
 
     "github.com/gofiber/fiber/v2"
+    "github.com/gofiber/fiber/v2/middleware/cors"
     "github.com/golang-jwt/jwt/v4"
 )
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+
+func CorsConfig() fiber.Handler {
+    allowedOrigins := strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
+    
+    return cors.New(cors.Config{
+        AllowOrigins: strings.Join(allowedOrigins, ","),
+        AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+        AllowMethods: "GET, POST, PUT, DELETE",
+        AllowCredentials: true,
+    })
+}
 
 func Protected() fiber.Handler {
     return func(c *fiber.Ctx) error {

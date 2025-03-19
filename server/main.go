@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"github.com/prkshayush/ai-taskmanager/db"
+	"github.com/prkshayush/ai-taskmanager/middleware"
 	"github.com/prkshayush/ai-taskmanager/routes"
 )
 
@@ -28,6 +29,7 @@ func main() {
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Server is up and running")
 	})
+    app.Use(middleware.CorsConfig())
 
 	routes.Routes(app)
 
