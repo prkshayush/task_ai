@@ -6,6 +6,7 @@ import { TaskCard } from '../components/TaskCard'
 import { CreateTaskModal } from '../components/CreateTaskModal'
 import axios from 'axios'
 import { wsService } from '@/lib/websocket'
+import { AIService } from '../components/AIService'
 
 export default function Dashboard() {
     const [tasks, setTasks] = useState<Task[]>([])
@@ -99,6 +100,8 @@ export default function Dashboard() {
                     </div>
                 ))}
             </div>
+
+            <AIService tasks={tasks}/>
 
             <CreateTaskModal 
                 isOpen={isCreateModalOpen}
