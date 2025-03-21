@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 
 export default function RegisterPage() {
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
     const router = useRouter();
     const form = useForm<RegisterInput>({
         resolver: zodResolver(registerSchema),
@@ -19,13 +20,24 @@ export default function RegisterPage() {
     async function onSubmit(data: RegisterInput) {
         try {
             setIsLoading(true)
-            await axios.post(`${process.env.NEXT_PUBLIC_AUTH_URL}/register`, {
-                username: data.username,
-                password: data.password,
+            setError("")
+
+            const payload = {
+                username: data.username.trim(),
+                password: data.password
+            }
+            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/register`, payload, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
             router.push("/login")
-        } catch (error) {
-            console.log(error)
+        } catch (error: any) {
+            console.error('Registration Error: ', {
+                status: error.response?.status,
+                message: error.response?.data?.message
+            })
+            setError(error.response?.data?.message || 'Registration failed. Please try again.')
         } finally {
             setIsLoading(false)
         }
@@ -34,6 +46,11 @@ export default function RegisterPage() {
     return (
         <div className="max-w-md mx-auto p-6 flex flex-col items-center justify-center gap-5 min-h-screen">
             <h1 className="text-2xl font-semibold">Register</h1>
+            {error && (
+                <div className="w-full p-3 rounded-lg text-md">
+                    {error}
+                </div>
+            )}
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-center justify-center flex-col gap-3">
                 <div>
                     <input {...form.register("username")} placeholder="Username" className="w-full p-5 border rounded-xl" />
@@ -67,7 +84,7 @@ export default function RegisterPage() {
                     {isLoading ? "Loading..." : "Register"}
                 </button>
                 <Link href="/login" className="block text-center text-sm text-blue-400">
-                    Already have an account? <span className="text-lg font-semibold">Login</span> 
+                    Already have an account? <span className="text-lg font-semibold">Login</span>
                 </Link>
             </form>
         </div>

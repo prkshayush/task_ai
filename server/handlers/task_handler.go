@@ -20,26 +20,37 @@ func CreateTask(c *fiber.Ctx) error {
 	}
 
 	task.UserID = c.Locals("user").(int)
+    if task.Status == "" {
+        task.Status = models.Pending
+    }
 
-	_, err := db.DB.NamedExec(`INSERT INTO tasks (title, description, user_id) VALUES (:title, :description, :user_id)`, &task)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Could not create task",
-		})
-	}
+	_, err := db.DB.NamedExec(`
+        INSERT INTO tasks (title, description, user_id, assigned_to, status) 
+        VALUES (:title, :description, :user_id, :assigned_to, :status)
+        RETURNING *`, &task)
+    if err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+            "message": "Could not create task",
+        })
+    }
+
+	var createdTask models.Task
+    err = db.DB.Get(&createdTask, `SELECT * FROM tasks WHERE id = (SELECT lastval())`)
+    if err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+            "message": "Could not fetch created task",
+        })
+    }
 
 	// websocket broadcast
-	update := fiber.Map{
-		"type": "task_created",
-		"task": task,
-	}
-	updateBytes, _ := json.Marshal(update)
-	services.WS.BroadcastUpdate(updateBytes)
+    update := fiber.Map{
+        "type": "task_created",
+        "task": createdTask,
+    }
+    updateBytes, _ := json.Marshal(update)
+    services.WS.BroadcastUpdate(updateBytes)
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message": "Task cretated successfully",
-	})
-
+    return c.Status(fiber.StatusCreated).JSON(createdTask)
 }
 
 func GetTasks(c *fiber.Ctx) error {
@@ -132,6 +143,14 @@ func AssignTask(c *fiber.Ctx) error {
         })
     }
 
+	var exists bool
+    err := db.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)", assignment.AssignedTo).Scan(&exists)
+    if err != nil || !exists {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "message": "Invalid assigned_to user",
+        })
+    }
+
     id, err := strconv.Atoi(taskID)
     if err != nil {
         return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -160,9 +179,23 @@ func AssignTask(c *fiber.Ctx) error {
         })
     }
 
-    return c.JSON(fiber.Map{
-        "message": "Task assigned successfully",
-    })
+	var updatedTask models.Task
+    err = db.DB.Get(&updatedTask, "SELECT * FROM tasks WHERE id = $1", id)
+    if err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+            "message": "Could not fetch updated task",
+        })
+    }
+
+	// websocket broadcast
+    update := fiber.Map{
+        "type": "task_assigned",
+        "task": updatedTask,
+    }
+    updateBytes, _ := json.Marshal(update)
+    services.WS.BroadcastUpdate(updateBytes)
+
+    return c.JSON(updatedTask)
 }
 
 func UpdateTaskStatus(c *fiber.Ctx) error {

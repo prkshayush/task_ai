@@ -21,7 +21,7 @@ export function TaskCard({ task, onStatusChange }: TaskCardProps) {
             const token = localStorage.getItem('token')
             await axios.post(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/task/${task.id}/assign`,
-                { user_id: parseInt(assignTo) },
+                { assigned_to: parseInt(assignTo) },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -52,8 +52,8 @@ export function TaskCard({ task, onStatusChange }: TaskCardProps) {
                 {task.status}
             </span>
         </div>
-        <p className="text-gray-600 text-sm mb-3">{task.description}</p>
-        <div className="flex justify-between gap-4 items-center text-xs text-gray-500">
+        <p className="text-gray-400 text-sm mb-3">{task.description}</p>
+        <div className="flex justify-between gap-4 items-center text-xs text-gray-400">
             <div className="flex items-center gap-2">
                 <span>Assigned to: {task.assigned_to ?? 'Unassigned'}</span>
                 <form onSubmit={handleAssign} className="flex items-center gap-1">
@@ -62,12 +62,12 @@ export function TaskCard({ task, onStatusChange }: TaskCardProps) {
                         value={assignTo}
                         onChange={(e) => setAssignTo(e.target.value)}
                         placeholder="User ID"
-                        className="w-16 px-1 py-1 border rounded"
+                        className="w-20 px-1 py-1 border rounded overflow-y-hidden"
                     />
                     <button
                         type="submit"
                         disabled={isAssigning || !assignTo}
-                        className="px-2 py-1 bg-blue-500 text-gray-100 rounded disabled:opacity-30"
+                        className="px-2 py-1 bg-blue-500 text-gray-100 rounded disabled:opacity-80"
                     >
                         Assign
                     </button>

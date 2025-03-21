@@ -32,7 +32,7 @@ export function CreateTaskModal({ isOpen, onClose, onTaskCreated }: CreateTaskMo
         try {
             setIsLoading(true)
             const token = localStorage.getItem('token')
-            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/task`, data, {
+            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/task`, data, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -47,7 +47,7 @@ export function CreateTaskModal({ isOpen, onClose, onTaskCreated }: CreateTaskMo
     }
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center">
+        <div className="fixed inset-0 bg-gray-950/85 flex items-center justify-center">
             <div className="p-6 rounded-lg w-full max-w-md">
                 <h2 className="text-xl font-bold mb-4">Create New Task</h2>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

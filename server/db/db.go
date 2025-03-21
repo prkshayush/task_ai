@@ -34,7 +34,7 @@ func createTables() {
         description TEXT,
         user_id INT REFERENCES users(id),
         assigned_to INT REFERENCES users(id),
-        status VARCHAR(20) DEFAULT 'Pending',
+        status VARCHAR(20) DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);

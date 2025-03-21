@@ -1,17 +1,18 @@
 'use client'
 
 import { LoginInput, loginSchema } from "@/lib/validation/auth";
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react"
 import { useForm } from "react-hook-form";
 
 
 
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("")
     const router = useRouter()
     const form = useForm<LoginInput>({
         resolver: zodResolver(loginSchema),
@@ -20,11 +21,44 @@ export default function Login() {
     async function onSubmit(data: LoginInput) {
         try {
             setIsLoading(true);
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_AUTH_URL}/login`, data)
-            localStorage.setItem("token", response.data.token);
-            router.push("/dashboard");
-        } catch (error) {
-            console.log(error)
+            setError("");
+            
+            // Log the exact request payload
+            const payload = {
+                username: data.username.trim(),
+                password: data.password
+            };
+
+            console.log('Login Request:', {
+                url: `${process.env.NEXT_PUBLIC_API_URL}/login`,
+                payload: { username: payload.username }
+            })
+            
+            const response = await axios.post(
+                `${process.env.NEXT_PUBLIC_API_URL}/login`, 
+                payload,
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            
+            if (response.data.token) {
+                localStorage.setItem("token", response.data.token)
+                router.push("/dashboard")
+            } else {
+                throw new Error("Invalid response from server")
+            }
+        } catch (error: any) {
+            console.error('Login Error:', {
+                status: error.response?.status,
+                message: error.response?.data?.message
+            })
+            setError(
+                error.response?.data?.message || 
+                'Unable to login. Please check your credentials.'
+            )
         } finally {
             setIsLoading(false)
         }
