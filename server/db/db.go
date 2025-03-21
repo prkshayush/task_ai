@@ -14,7 +14,7 @@ func InitDB() {
 	var err error
 	DB, err = sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 
 	createTables()
