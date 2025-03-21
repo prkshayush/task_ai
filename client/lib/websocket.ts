@@ -28,7 +28,8 @@ class WebSocketService {
     private isConnecting: boolean = false
 
     constructor() {
-        this.url = `ws://${process.env.NEXT_PUBLIC_API_URL?.replace('http://', '')}/ws`
+        const wsProtocol = process.env.NEXT_PUBLIC_API_URL?.startsWith('https') ? 'wss' : 'ws'
+        this.url = `${wsProtocol}://${process.env.NEXT_PUBLIC_API_URL?.replace('https://', '').replace('http://', '')}/ws`
     }
 
     connect(onTaskCreated: (task: Task) => void, onStatusUpdated: (taskId: number, status: string) => void) {
